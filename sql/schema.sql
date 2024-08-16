@@ -1,14 +1,14 @@
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   username VARCHAR(25) UNIQUE NOT NULL CHECK (
-    LENGTH(TRIM(username) > 0)
+    LENGTH(TRIM(username)) > 0
   )
 );
 CREATE TABLE topics (
   -- a 4-byte integer should suffice for id here
   id SERIAL PRIMARY KEY,
   name VARCHAR(30) UNIQUE NOT NULL CHECK (
-    LENGTH(TRIM(name) > 0)
+    LENGTH(TRIM(name)) > 0
   ),
   description VARCHAR(500)
 );
@@ -19,16 +19,16 @@ CREATE TABLE posts (
   topic_id INTEGER REFERENCES topics (id)
     ON DELETE CASCADE,
   title VARCHAR(100) NOT NULL CHECK (
-    LENGTH(TRIM(title) > 0)
+    LENGTH(TRIM(title)) > 0
   ),
   -- choose a reasonable limit for url length
   url VARCHAR(2000) CHECK (
     -- if url is present, it cannot be empty
-    url IS NULL OR LENGTH(TRIM(url) > 0)
+    url IS NULL OR LENGTH(TRIM(url)) > 0
   ),
   content TEXT CHECK (
     -- if content is present, it cannot be empty
-    text IS NULL OR LENGTH(TRIM(content) > 0)
+    text IS NULL OR LENGTH(TRIM(content)) > 0
   ),
   -- exactly one of url and content must be present
   CHECK (
@@ -41,7 +41,7 @@ CREATE TABLE comments (
   user_id BIGINT REFERENCES users (id)
     ON DELETE SET NULL,
   content TEXT NOT NULL CHECK (
-    LENGTH(TRIM(content) > 0)
+    LENGTH(TRIM(content)) > 0
   ),
   -- top-level comments have a parent_post_id
   parent_post_id BIGINT REFERENCES posts (id)
