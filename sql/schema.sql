@@ -5,7 +5,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE topics (
-  -- a 4-byte integer should suffice for id here
+  -- an ordinary 4-byte integer should suffice for id here
   id SERIAL PRIMARY KEY,
   name VARCHAR(30) UNIQUE NOT NULL,
   description VARCHAR(500),
@@ -27,8 +27,8 @@ CREATE TABLE posts (
   CONSTRAINT post_content_absent_or_nonempty CHECK (
     content IS NULL OR LENGTH(TRIM(content)) > 0
   ),
-  -- exactly one of url and content must be present
   CONSTRAINT post_url_xor_content CHECK (
+    -- exactly one of url or content must be present
     (url IS NULL AND content IS NOT NULL) OR
     (url IS NOT NULL AND content IS NULL)
   )
@@ -38,12 +38,11 @@ CREATE TABLE comments (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT REFERENCES users (id) ON DELETE SET NULL,
   content TEXT NOT NULL,
-  -- top-level comments have a parent_post_id
+  -- top-level comments have a parent_post_id; others have a parent_comment_id
   parent_post_id BIGINT REFERENCES posts (id) ON DELETE CASCADE,
-  -- other comments have a parent_comment_id
   parent_comment_id BIGINT REFERENCES comments (id) ON DELETE CASCADE,
-  -- comments must have a parent_post_id or a parent_comment_id, but not both
   CONSTRAINT comment_exactly_one_parent CHECK (
+    -- exactly one of parent_post_id or parent_comment_id must be present
     (parent_post_id IS NULL AND parent_comment_id IS NOT NULL) OR
     (parent_post_id IS NOT NULL AND parent_comment_id IS NULL)
   ),
@@ -53,7 +52,9 @@ CREATE TABLE comments (
 CREATE TABLE votes (
   user_id BIGINT REFERENCES users (id) ON DELETE SET NULL,
   post_id BIGINT REFERENCES posts (id) ON DELETE CASCADE,
-  -- a boolean would be more efficient here, but the template suggests 1 and -1
+  -- a boolean would use less space for storing the value (one byte vs. two),
+  --   but using a smallint with 1 and -1 allows finding a post's score by
+  --   simply computing a sum
   value SMALLINT NOT NULL,
   CONSTRAINT vote_up_or_down CHECK (value IN (1, -1)),
   PRIMARY KEY (post_id, user_id)
