@@ -24,7 +24,7 @@ CREATE TABLE posts (
   user_id BIGINT REFERENCES users (id) ON DELETE SET NULL,
   topic_id INTEGER REFERENCES topics (id) ON DELETE CASCADE,
   title VARCHAR(100) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE,
   -- choose a reasonable limit for url length
   url VARCHAR(2000),
   content TEXT,
@@ -50,7 +50,7 @@ CREATE INDEX posts_by_url ON posts (url);
 CREATE TABLE comments (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT REFERENCES users (id) ON DELETE SET NULL,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE,
   content TEXT NOT NULL,
   -- top-level comments have a parent_post_id; others have a parent_comment_id
   parent_post_id BIGINT REFERENCES posts (id) ON DELETE CASCADE,
