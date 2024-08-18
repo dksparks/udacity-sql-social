@@ -24,7 +24,7 @@ JOIN users u ON bp.username = u.username
 JOIN topics t ON INITCAP(bp.topic) = t.name;
 
 INSERT INTO comments (id, user_id, content, parent_post_id)
-select bc.id, u.id, bc.text_content, bc.post_id
+SELECT bc.id, u.id, bc.text_content, bc.post_id
 FROM bad_comments bc JOIN users u ON bc.username = u.username;
 
 WITH temp_votes AS (
@@ -42,3 +42,10 @@ WITH temp_votes AS (
 INSERT INTO votes (user_id, post_id, value)
 SELECT u.id, tv.post_id, tv.value
 FROM temp_votes tv JOIN users u ON tv.username = u.username;
+
+UPDATE users u SET number_of_posts = (
+  SELECT COUNT(*) FROM posts p WHERE p.user_id = u.id
+);
+UPDATE topics t SET number_of_posts = (
+  SELECT COUNT(*) FROM posts p WHERE p.topic_id = t.id
+);
