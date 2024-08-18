@@ -5,9 +5,15 @@ CREATE TABLE users (
   -- allow last_login to be null since a user could create an account
   -- (or have one created for them) without ever logging in
   last_login TIMESTAMP WITH TIME ZONE,
+  -- the number_of_posts column is redundant, as it can be computed from
+  -- the posts table whenever it is needed, but it is stored here so that
+  -- it can be indexed as per item 2b of the project guidelines
+  number_of_posts INTEGER DEFAULT 0,
   CONSTRAINT username_nonempty CHECK (LENGTH(TRIM(username)) > 0)
 );
 CREATE UNIQUE INDEX user_by_username ON users (username);
+CREATE INDEX user_by_last_login ON users (last_login);
+CREATE INDEX user_by_number_of_posts ON users (number_of_posts);
 
 CREATE TABLE topics (
   -- an ordinary 4-byte integer should suffice for id here
@@ -15,6 +21,10 @@ CREATE TABLE topics (
   -- uniqueness of name enforced by unique index
   name VARCHAR(30) NOT NULL,
   description VARCHAR(500),
+  -- the number_of_posts column is redundant, as it can be computed from
+  -- the posts table whenever it is needed, but it is stored here so that
+  -- it can be indexed as per item 2d of the project guidelines
+  number_of_posts INTEGER DEFAULT 0,
   CONSTRAINT topic_name_nonempty CHECK (LENGTH(TRIM(name)) > 0)
 );
 CREATE UNIQUE INDEX topic_by_name ON topics (name);
@@ -81,9 +91,3 @@ CREATE TABLE votes (
   -- computing the post's score (upvotes minus downvotes)
   PRIMARY KEY (post_id, user_id)
 );
-
--- Note: the following queries seem unlikely to be executed frequently enough
--- to justify creating indexes or denormalizing the data to accommodate them:
--- a. List all users who haven’t logged in in the last year.
--- b. List all users who haven’t created any posts.
--- d. List all topics that don’t have any posts.
